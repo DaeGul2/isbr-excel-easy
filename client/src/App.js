@@ -1,13 +1,22 @@
-import React from "react";
-import ExcelUploader from "./components/ExcelUploader";
-import "bootstrap/dist/css/bootstrap.min.css";
+import React from 'react';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import Navbar from './components/Navbar/Navbar';
+import ExcelUploader from './components/ExcelUploader/ExcelUploader';
+import TextToExcel from './components/TextToExcel/TextToExcel';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 function App() {
   return (
-    <div className="container mt-5">
-      <h1 className="text-center">Excel 데이터 추출기</h1>
-      <ExcelUploader />
-    </div>
+    <Router>
+      <div>
+        <Navbar />
+        <Routes>
+          <Route path="/excel-uploader" element={<ExcelUploader />} />
+          <Route path="/text-to-excel" element={<TextToExcel />} />
+          <Route path="/" element={<ExcelUploader />} />
+        </Routes>
+      </div>
+    </Router>
   );
 }
 
