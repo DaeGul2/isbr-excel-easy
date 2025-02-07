@@ -20,7 +20,7 @@ function TextToExcel() {
   const handleProcessText = () => {
     const splitLines = text.split('\n').filter(line => line.trim() !== '');
     const linesWithSlash = splitLines.filter(line => line.includes('/'));
-    const parsedData = linesWithSlash.map(line => 
+    const parsedData = linesWithSlash.map(line =>
       line.split('/').map(part => part.trim())
     );
     const maxCols = parsedData.reduce((max, arr) => Math.max(max, arr.length), 0);
@@ -44,15 +44,22 @@ function TextToExcel() {
   const downloadExcel = () => {
     const fileName = prompt("엑셀 파일명을 입력하세요 (확장자 제외):", "파싱결과");
     if (fileName) {
-      const headers = option === 'workHistory' ?
-        ['근무자', '근무일자', '근무유형', '근무장소', '근무내용', '프로젝트연번'] :
-        ['대상자', '정정요청일자', '요청사유'];
+    
+      if (option === 'workHistory') {
+        headers = ['근무자', '근무일자', '근무유형', '근무장소', '근무내용', '프로젝트연번']
+      }
+      else if (option === 'ingam') {
+        headers = ['분류', '사용일자', '문서구분', '날인횟수', '제출처', '사용자']
+      }
+      else {
+        headers = ['대상자', '정정요청일자', '요청사유'];
+      }
       const extraHeaders = Array.from({ length: maxColumns - headers.length }, () => '기타');
       const fullHeaders = headers.concat(extraHeaders);
 
       const worksheet = XLSX.utils.json_to_sheet(tableData, { skipHeader: true });
       XLSX.utils.sheet_add_aoa(worksheet, [fullHeaders], { origin: 'A1' });
-      
+
       // Apply style to header
       const range = XLSX.utils.decode_range(worksheet['!ref']);
       for (let C = range.s.c; C <= range.e.c; ++C) {
@@ -100,6 +107,18 @@ function TextToExcel() {
             className="form-check-input"
           />
           <label className="form-check-label" htmlFor="attendanceAdjustment">근태기록정정</label>
+        </div>
+        <div className="form-check">
+          <input
+            type="radio"
+            id="ingam"
+            name="option"
+            value="ingam"
+            checked={option === 'ingam'}
+            onChange={handleOptionChange}
+            className="form-check-input"
+          />
+          <label className="form-check-label" htmlFor="ingam">인감사용내역</label>
         </div>
       </div>
       <textarea
