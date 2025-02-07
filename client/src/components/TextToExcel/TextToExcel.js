@@ -44,31 +44,21 @@ function TextToExcel() {
   const downloadExcel = () => {
     const fileName = prompt("엑셀 파일명을 입력하세요 (확장자 제외):", "파싱결과");
     if (fileName) {
-    
+      let headers = [];
+
       if (option === 'workHistory') {
-        headers = ['근무자', '근무일자', '근무유형', '근무장소', '근무내용', '프로젝트연번']
-      }
-      else if (option === 'ingam') {
-        headers = ['분류', '사용일자', '문서구분', '날인횟수', '제출처', '사용자']
-      }
-      else {
+        headers = ['근무자', '근무일자', '근무유형', '근무장소', '근무내용', '프로젝트연번'];
+      } else if (option === 'ingam') {
+        headers = ['분류', '사용일자', '문서구분', '날인횟수', '제출처', '사용자'];
+      } else {
         headers = ['대상자', '정정요청일자', '요청사유'];
       }
+
       const extraHeaders = Array.from({ length: maxColumns - headers.length }, () => '기타');
       const fullHeaders = headers.concat(extraHeaders);
 
       const worksheet = XLSX.utils.json_to_sheet(tableData, { skipHeader: true });
       XLSX.utils.sheet_add_aoa(worksheet, [fullHeaders], { origin: 'A1' });
-
-      // Apply style to header
-      const range = XLSX.utils.decode_range(worksheet['!ref']);
-      for (let C = range.s.c; C <= range.e.c; ++C) {
-        const address = XLSX.utils.encode_col(C) + "1"; // Target first row, which is the header
-        if (!worksheet[address]) continue;
-        worksheet[address].s = {
-          font: { bold: true }
-        };
-      }
 
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, 'Data');
@@ -78,6 +68,21 @@ function TextToExcel() {
 
   const closeModal = () => {
     setShowModal(false);
+  };
+
+  // 🚀 옵션별 테이블 헤더 동적 설정
+  const getTableHeaders = () => {
+    let headers = [];
+
+    if (option === 'workHistory') {
+      headers = ['근무자', '근무일자', '근무유형', '근무장소', '근무내용', '프로젝트연번'];
+    } else if (option === 'ingam') {
+      headers = ['분류', '사용일자', '문서구분', '날인횟수', '제출처', '사용자'];
+    } else {
+      headers = ['대상자', '정정요청일자', '요청사유'];
+    }
+
+    return headers.concat(Array.from({ length: maxColumns - headers.length }, () => '기타'));
   };
 
   return (
@@ -140,15 +145,9 @@ function TextToExcel() {
           <Table bordered>
             <thead>
               <tr>
-                {option === 'workHistory' ?
-                  ['근무자', '근무일자', '근무유형', '근무장소', '근무내용', '프로젝트연번'].map((header, index) => (
-                    <th key={index}>{header}</th>
-                  )) :
-                  ['대상자', '정정요청일자', '요청사유'].map((header, index) => (
-                    <th key={index}>{header}</th>
-                  ))
-                }
-                {Array.from({ length: maxColumns - (option === 'workHistory' ? 6 : 3) }, (_, i) => <th key={i}>기타</th>)}
+                {getTableHeaders().map((header, index) => (
+                  <th key={index}>{header}</th>
+                ))}
                 <th>작업</th>
               </tr>
             </thead>
@@ -156,7 +155,9 @@ function TextToExcel() {
               {tableData.map((row, index) => (
                 <tr key={index}>
                   {row.map((cell, idx) => (
-                    <td key={idx} contentEditable onInput={(e) => updateCell(index, idx, e.currentTarget.textContent)}>{cell}</td>
+                    <td key={idx} contentEditable onInput={(e) => updateCell(index, idx, e.currentTarget.textContent)}>
+                      {cell}
+                    </td>
                   ))}
                   {Array.from({ length: maxColumns - row.length }).map((_, i) => <td key={i}>-</td>)}
                   <td><Button variant="danger" onClick={() => deleteRow(index)}>삭제</Button></td>
